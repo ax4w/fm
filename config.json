@@ -1,0 +1,9 @@
+{
+    "open_in_app": {
+        "default": "kitty nvim PATH",
+        "html": "chromium PATH",
+        "png": "feh PATH",
+        "jpg": "feh PATH",
+        "jpeg": "feh PATH"
+    } 
+}
