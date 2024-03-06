@@ -54,6 +54,7 @@ func main() {
 				break
 			case 'd':
 				if lastKey == 'd' {
+//FixMe: root nicht deletebar machen
 					deleteFile(tree, root)
 					lastKey = ' '
 					return event
