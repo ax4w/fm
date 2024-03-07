@@ -1,5 +1,5 @@
 # fm
-A very basic cli file manager for linux 
+A very basic tree based cli file manager for linux 
 
 ![20240307_17h36m31s_grim](https://github.com/0x3alex/fm/assets/90933044/4263f966-42e5-494f-bcda-a11a179c7970)
 
