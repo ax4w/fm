@@ -3,7 +3,9 @@ A very basic cli file manager for linux
 
 ![20240307_17h36m31s_grim](https://github.com/0x3alex/fm/assets/90933044/4263f966-42e5-494f-bcda-a11a179c7970)
 
-
+## CLI Arguments
+`-dir`: provide a custom root directory to open, defaults to the users home directory
+`-h`: displays help
 
 ## Shortcuts
 - CRTL + C : Quit
