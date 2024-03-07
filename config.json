@@ -5,5 +5,16 @@
         "png": "feh PATH",
         "jpg": "feh PATH",
         "jpeg": "feh PATH"
-    } 
+    }, 
+    "keybinds": {
+      "d": "delete",
+      "s": "preview",
+      "c": "copy",
+      "p": "paste",
+      "t": "collapseAll",
+      "m": "moveSelect",
+      "m": "moveDrop",
+      "i": "info",
+      "n": "new"
+    }
 }

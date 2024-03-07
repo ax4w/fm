@@ -7,6 +7,7 @@ import (
 
 type configStruct struct {
 	OpenInApp map[string]string `json:"open_in_app"`
+	KeyBinds  map[string]string `json:"keybinds"`
 }
 
 var config configStruct

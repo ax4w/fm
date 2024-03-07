@@ -71,23 +71,55 @@ func showInfo(n *tview.TreeNode, fmFlex *tview.Flex) {
 	fmFlex.AddItem(preview, 0, 1, false)
 }
 
-func previewFile(n *tview.TreeNode, fmFlex *tview.Flex) {
-	if preview != nil {
-		fmFlex.RemoveItem(preview)
-		preview = nil
+func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
+	closeSideWindows(fmFlex)
+
+	current := tree.GetCurrentNode()
+	ref := *rootDir
+	if current != root {
+		ref = current.GetReference().(string)
+	}
+	if !isDir(ref) {
+		return
+	}
+	newFileWin = tview.NewForm().
+		AddInputField("Name", "", 30, nil, nil).
+		AddTextView("Notice", "Put a / after the name to create a folder", 30, 20, false, false).
+		AddButton("Create", func() {
+			txt := newFileWin.GetFormItem(0).(*tview.InputField).GetText()
+			p := ref + "/" + txt
+			if txt[len(txt)-1] == '/' {
+				exec.Command("mkdir", p).Run()
+			} else {
+				exec.Command("touch", p).Run()
+			}
+			closeSideWindows(fmFlex)
+
+			current.ClearChildren()
+			readDir(current, ref)
+			tree.SetCurrentNode(current)
+			current.Expand()
+		}).
+		AddButton("Cancel", func() {
+			closeSideWindows(fmFlex)
+		})
+	fmFlex.AddItem(newFileWin, 0, 1, false)
+	app.SetFocus(newFileWin)
+}
+
+func previewFile(n *tview.TreeNode, fmFlex *tview.Flex, root *tview.TreeNode) {
+	if n == root {
+		return
+	}
+	closeSideWindows(fmFlex)
+	if isDir(n.GetReference().(string)) {
+		return
 	}
 	f, err := os.Open(n.GetReference().(string))
+	if err != nil {
+		return
+	}
 	defer f.Close()
-	if err != nil {
-		return
-	}
-	stat, err := f.Stat()
-	if err != nil {
-		return
-	}
-	if stat.IsDir() {
-		return
-	}
 	ext := strings.ReplaceAll(path.Ext(n.GetText()), ".", "")
 	if ext == "png" || ext == "jpg" || ext == "jpeg" {
 		var (
@@ -103,7 +135,6 @@ func previewFile(n *tview.TreeNode, fmFlex *tview.Flex) {
 			return
 		}
 		preview = tview.NewImage().SetImage(img)
-		//fmFlex.AddItem(tview.NewImage().SetImage(img), 0, 1, false)
 	} else {
 		content, err := os.ReadFile(n.GetReference().(string))
 		if err != nil {
@@ -136,21 +167,9 @@ func moveFile(tree *tview.TreeView, root *tview.TreeNode) {
 	if len(mv[0]) == 0 || len(mv[1]) == 0 {
 		return
 	}
-	f, err := os.Open(mv[1])
-	if err != nil {
-
+	if !isDir(mv[1]) {
 		return
 	}
-	stat, err := f.Stat()
-	if err != nil {
-
-		return
-	}
-	if !stat.IsDir() {
-
-		return
-	}
-	f.Close()
 
 	cmd := exec.Command("mv", "", mv[0], mv[1])
 	cmd.Run()
@@ -182,21 +201,14 @@ func moveFile(tree *tview.TreeView, root *tview.TreeNode) {
 }
 
 func copyFile(tree *tview.TreeView, root *tview.TreeNode) {
+
 	if len(cp[0]) == 0 || len(cp[1]) == 0 {
 		return
 	}
-	f, err := os.Open(cp[1])
-	if err != nil {
+	if !isDir(cp[1]) {
 		return
 	}
-	stat, err := f.Stat()
-	if err != nil {
-		return
-	}
-	if !stat.IsDir() {
-		return
-	}
-	f.Close()
+
 	cmd := exec.Command("cp", "-r", cp[0], cp[1])
 	if err := cmd.Run(); err != nil {
 		panic(err.Error())
