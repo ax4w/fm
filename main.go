@@ -12,16 +12,14 @@ import (
 )
 
 var (
-	sideWindow    tview.Primitive
-	previewNode   *tview.TreeNode
-	infoNode      *tview.TreeNode
-	app           *tview.Application
-	newFileWin    *tview.Form
-	cp            = [2]string{"", ""}
-	mv            = [2]string{"", ""}
-	switchedFocus = false
-	rootDir       *string
-	tree          *tview.TreeView
+	sideWindow  tview.Primitive
+	previewNode *tview.TreeNode
+	infoNode    *tview.TreeNode
+	app         *tview.Application
+	newFileWin  *tview.Form
+	cp          = [2]string{"", ""}
+	mv          = [2]string{"", ""}
+	rootDir     *string
 )
 
 func main() {
@@ -32,7 +30,6 @@ func main() {
 	rootDir = flag.String("dir", home, "Open a specific directory")
 	helpStr := ""
 	for k, v := range config.KeyBinds {
-
 		helpStr += k + ": " + v + " "
 	}
 	header := tview.NewTextArea().SetText("Fm - File Manager\n"+helpStr, false).
@@ -48,7 +45,7 @@ func main() {
 	flag.Parse()
 	root := tview.NewTreeNode(*rootDir).
 		SetColor(tcell.ColorRed)
-	tree = tview.NewTreeView().
+	tree := tview.NewTreeView().
 		SetRoot(root).
 		SetCurrentNode(root)
 	readDir(root, *rootDir)
@@ -59,7 +56,7 @@ func main() {
 			action := config.KeyBinds[string(event.Rune())]
 			switch strings.ToLower(action) {
 			case "new":
-				newFileWindow(root, fmFlex)
+				newFileWindow(tree, root, fmFlex)
 				break
 			case "collapseall":
 				collapseAll(root)
@@ -84,11 +81,11 @@ func main() {
 				break
 			case "preview":
 				n := tree.GetCurrentNode()
-				previewFile(n, fmFlex, root)
+				previewFile(tree, n, fmFlex, root)
 				break
 			case "info":
 
-				showInfo(tree.GetCurrentNode(), fmFlex)
+				showInfo(tree, tree.GetCurrentNode(), fmFlex)
 				break
 			case "copy":
 

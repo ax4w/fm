@@ -8,31 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
-
-func readDir(target *tview.TreeNode, path string) {
-
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return
-	}
-	for _, file := range files {
-		node := tview.NewTreeNode(file.Name()).
-			SetReference(filepath.Join(path, file.Name()))
-		if file.IsDir() {
-			node.SetColor(tcell.ColorGreen)
-			node.SetText("🗁 " + file.Name())
-		}
-		target.AddChild(node)
-	}
-
-}
 
 func collapseAll(root *tview.TreeNode) {
 	for _, v := range root.GetChildren() {
@@ -41,18 +21,7 @@ func collapseAll(root *tview.TreeNode) {
 	}
 }
 
-func findNode(t *tview.TreeNode, path string) *tview.TreeNode {
-	for _, v := range t.GetChildren() {
-		if v.GetReference().(string) == path {
-			return v
-		}
-		if f := findNode(v, path); f != nil {
-			return f
-		}
-	}
-	return nil
-}
-func showInfo(n *tview.TreeNode, fmFlex *tview.Flex) {
+func showInfo(tree *tview.TreeView, n *tview.TreeNode, fmFlex *tview.Flex) {
 	f, err := os.Open(n.GetReference().(string))
 	if err != nil {
 		return
@@ -61,7 +30,7 @@ func showInfo(n *tview.TreeNode, fmFlex *tview.Flex) {
 	if err != nil {
 		return
 	}
-	closeSideWindows(fmFlex)
+	closeSideWindows(tree, fmFlex)
 	if infoNode == n {
 		infoNode = nil
 		return
@@ -74,8 +43,8 @@ func showInfo(n *tview.TreeNode, fmFlex *tview.Flex) {
 	fmFlex.AddItem(sideWindow, 0, 1, false)
 }
 
-func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
-	closeSideWindows(fmFlex)
+func newFileWindow(tree *tview.TreeView, root *tview.TreeNode, fmFlex *tview.Flex) {
+	closeSideWindows(tree, fmFlex)
 
 	current := tree.GetCurrentNode()
 	ref := *rootDir
@@ -96,7 +65,7 @@ func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
 			} else {
 				os.Create(p)
 			}
-			closeSideWindows(fmFlex)
+			closeSideWindows(tree, fmFlex)
 
 			current.ClearChildren()
 			readDir(current, ref)
@@ -104,17 +73,17 @@ func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
 			current.Expand()
 		}).
 		AddButton("Cancel", func() {
-			closeSideWindows(fmFlex)
+			closeSideWindows(tree, fmFlex)
 		})
 	fmFlex.AddItem(newFileWin, 0, 1, false)
 	app.SetFocus(newFileWin)
 }
 
-func previewFile(n *tview.TreeNode, fmFlex *tview.Flex, root *tview.TreeNode) {
+func previewFile(tree *tview.TreeView, n *tview.TreeNode, fmFlex *tview.Flex, root *tview.TreeNode) {
 	if n == root {
 		return
 	}
-	closeSideWindows(fmFlex)
+	closeSideWindows(tree, fmFlex)
 	if n == previewNode {
 		previewNode = nil
 		return
@@ -161,14 +130,7 @@ func deleteFile(tree *tview.TreeView, root *tview.TreeNode) {
 	os.RemoveAll(p)
 	le := strings.Split(p, "/")
 	pt := strings.Join(le[:len(le)-1], "/")
-	n := findNode(root, pt)
-	if n == nil {
-		n = root
-	}
-	n.ClearChildren()
-	readDir(n, pt)
-	tree.SetCurrentNode(n)
-	n.Expand()
+	updateTree(tree, root, pt)
 
 }
 
@@ -181,33 +143,14 @@ func moveFile(tree *tview.TreeView, root *tview.TreeNode) {
 	}
 
 	if err := exec.Command("mv", mv[0], mv[1]).Run(); err != nil {
-		panic(err.Error())
 		return
 	}
 
-	n := findNode(root, mv[1])
-
-	if n == nil {
-		n = root
-	}
-	n.ClearChildren()
-	readDir(n, mv[1])
-	tree.SetCurrentNode(n)
-	n.Expand()
-
-	n = findNode(root, mv[0])
-
 	le := strings.Split(mv[0], "/")
 	pt := strings.Join(le[:len(le)-1], "/")
-	n = findNode(root, pt)
-
-	if n == nil {
-		n = root
-	}
-	n.ClearChildren()
-	readDir(n, pt)
-	mv[0] = ""
-	mv[1] = ""
+	updateTree(tree, root, pt)
+	updateTree(tree, root, mv[1])
+	mv = [2]string{}
 
 }
 
@@ -221,7 +164,7 @@ func copyFile(tree *tview.TreeView, root *tview.TreeNode) {
 	}
 
 	if err := exec.Command("cp", "-r", cp[0], cp[1]).Run(); err != nil {
-		panic(err.Error())
+		return
 	}
 	n := root
 	if cp[1] != *rootDir {
@@ -234,8 +177,7 @@ func copyFile(tree *tview.TreeView, root *tview.TreeNode) {
 	readDir(n, cp[1])
 	tree.SetCurrentNode(n)
 	n.Expand()
-	cp[0] = ""
-	cp[1] = ""
+	cp = [2]string{}
 }
 
 func openFile(cmd, path string) {
