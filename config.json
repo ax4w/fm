@@ -9,6 +9,7 @@
     "keybinds": {
       "d": "delete",
       "s": "preview",
+      "o":"open",
       "c": "copy",
       "p": "paste",
       "t": "collapseAll",
