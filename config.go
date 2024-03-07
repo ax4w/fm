@@ -10,9 +10,12 @@ type configStruct struct {
 	KeyBinds  map[string]string `json:"keybinds"`
 }
 
-var config configStruct
-
-func loadConfig() {
-	f, _ := os.ReadFile("./config.json")
+func loadConfig() configStruct {
+	f, err := os.ReadFile("./config.json")
+	if err != nil {
+		panic(err.Error())
+	}
+	var config configStruct
 	json.Unmarshal(f, &config)
+	return config
 }
