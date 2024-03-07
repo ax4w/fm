@@ -30,6 +30,7 @@ func main() {
 	rootDir = flag.String("dir", home, "Open a specific directory")
 	helpStr := ""
 	for k, v := range config.KeyBinds {
+
 		helpStr += k + ": " + v + " "
 	}
 	header := tview.NewTextArea().SetText("Fm - File Manager\n"+helpStr, false).
@@ -63,7 +64,7 @@ func main() {
 				break
 			case "delete":
 				if lastKey == 'd' {
-//FixMe: make root not deletable
+					//FixMe: make root not deletable
 					deleteFile(tree, root)
 					lastKey = ' '
 					return event
@@ -103,8 +104,7 @@ func main() {
 				}
 				copyFile(tree, root)
 				break
-			case "moveselecte":
-			case "movedrop":
+			case "move":
 				if mv[0] == "" {
 					if tree.GetCurrentNode().GetReference() == nil {
 						return event

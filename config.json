@@ -12,8 +12,7 @@
       "c": "copy",
       "p": "paste",
       "t": "collapseAll",
-      "m": "moveSelect",
-      "m": "moveDrop",
+      "m": "move",
       "i": "info",
       "n": "new"
     }
