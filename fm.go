@@ -92,9 +92,9 @@ func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
 			txt := newFileWin.GetFormItem(0).(*tview.InputField).GetText()
 			p := ref + "/" + txt
 			if txt[len(txt)-1] == '/' {
-				exec.Command("mkdir", p).Run()
+				os.Mkdir(p, os.ModePerm)
 			} else {
-				exec.Command("touch", p).Run()
+				os.Create(p)
 			}
 			closeSideWindows(fmFlex)
 
@@ -180,8 +180,10 @@ func moveFile(tree *tview.TreeView, root *tview.TreeNode) {
 		return
 	}
 
-	cmd := exec.Command("mv", "", mv[0], mv[1])
-	cmd.Run()
+	if err := exec.Command("mv", mv[0], mv[1]).Run(); err != nil {
+		panic(err.Error())
+		return
+	}
 
 	n := findNode(root, mv[1])
 
@@ -218,8 +220,7 @@ func copyFile(tree *tview.TreeView, root *tview.TreeNode) {
 		return
 	}
 
-	cmd := exec.Command("cp", "-r", cp[0], cp[1])
-	if err := cmd.Run(); err != nil {
+	if err := exec.Command("cp", "-r", cp[0], cp[1]).Run(); err != nil {
 		panic(err.Error())
 	}
 	n := root
