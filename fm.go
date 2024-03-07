@@ -61,14 +61,17 @@ func showInfo(n *tview.TreeNode, fmFlex *tview.Flex) {
 	if err != nil {
 		return
 	}
-	if preview != nil {
-		fmFlex.RemoveItem(preview)
-		preview = nil
+	closeSideWindows(fmFlex)
+	if infoNode == n {
+		infoNode = nil
+		return
 	}
-	preview = tview.NewTextView().SetText(fmt.Sprintf("Name: %s\nSize: %d bytes\nModified: %s",
+	previewNode = nil
+	infoNode = n
+	sideWindow = tview.NewTextView().SetText(fmt.Sprintf("Name: %s\nSize: %d bytes\nModified: %s",
 		stat.Name(), stat.Size(), stat.ModTime().Format(time.RFC822)))
 
-	fmFlex.AddItem(preview, 0, 1, false)
+	fmFlex.AddItem(sideWindow, 0, 1, false)
 }
 
 func newFileWindow(root *tview.TreeNode, fmFlex *tview.Flex) {
@@ -112,6 +115,12 @@ func previewFile(n *tview.TreeNode, fmFlex *tview.Flex, root *tview.TreeNode) {
 		return
 	}
 	closeSideWindows(fmFlex)
+	if n == previewNode {
+		previewNode = nil
+		return
+	}
+	previewNode = n
+	infoNode = nil
 	if isDir(n.GetReference().(string)) {
 		return
 	}
@@ -134,16 +143,16 @@ func previewFile(n *tview.TreeNode, fmFlex *tview.Flex, root *tview.TreeNode) {
 		if err != nil {
 			return
 		}
-		preview = tview.NewImage().SetImage(img)
+		sideWindow = tview.NewImage().SetImage(img)
 	} else {
 		content, err := os.ReadFile(n.GetReference().(string))
 		if err != nil {
 			return
 		}
-		preview = tview.NewTextView().SetText(string(content))
+		sideWindow = tview.NewTextView().SetText(string(content))
 	}
 
-	fmFlex.AddItem(preview, 0, 1, false)
+	fmFlex.AddItem(sideWindow, 0, 1, false)
 
 }
 

@@ -21,9 +21,9 @@ func isDir(ref string) bool {
 }
 
 func closeSideWindows(fmFlex *tview.Flex) {
-	if preview != nil {
-		fmFlex.RemoveItem(preview)
-		preview = nil
+	if sideWindow != nil {
+		fmFlex.RemoveItem(sideWindow)
+		sideWindow = nil
 	}
 	if newFileWin != nil {
 		fmFlex.RemoveItem(newFileWin)

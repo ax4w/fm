@@ -12,7 +12,9 @@ import (
 )
 
 var (
-	preview       tview.Primitive
+	sideWindow    tview.Primitive
+	previewNode   *tview.TreeNode
+	infoNode      *tview.TreeNode
 	app           *tview.Application
 	newFileWin    *tview.Form
 	cp            = [2]string{"", ""}
@@ -135,7 +137,6 @@ func main() {
 		if !isDir(reference.(string)) {
 			return
 		}
-
 		children := node.GetChildren()
 		if len(children) == 0 {
 			path := reference.(string)
